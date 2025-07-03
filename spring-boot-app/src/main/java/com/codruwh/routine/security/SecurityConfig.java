@@ -16,8 +16,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import com.codruwh.routine.security.JwtAuthenticationFilter;
-import com.codruwh.routine.security.JwtExceptionFilter;
 
 import java.io.IOException;
 
