@@ -4,6 +4,8 @@ import com.codruwh.routine.common.ErrorResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtExceptionFilter jwtExceptionFilter;
 
+    @Value("${security.swagger.enabled:false}")
+    private boolean swaggerEnabled;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -38,21 +43,28 @@ public class SecurityConfig {
             .httpBasic(httpBasic -> httpBasic.disable())
 
             // 세션 관리 정책을 STATELESS로 설정 (세션을 사용하지 않음)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
             // 요청에 대한 인가 규칙 설정
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/api", "/error", "/favicon.ico", "/actuator/**").permitAll() // 특정 경로는 인증 없이 허용
-                .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
-            )
+            http.authorizeHttpRequests(auth -> {
+                auth.requestMatchers("/", "/api", "/error", "/favicon.ico", "/actuator/**").permitAll(); // 특정 경로는 인증 없이 허용
+                if (swaggerEnabled) {
+                    // Swagger UI 및 API docs에 인증 없이 접근 허용
+                    auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll();
+                } else {
+                    // 안돼 안 열어줘
+                    auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").denyAll();
+                }
+                auth.anyRequest().authenticated(); // 나머지 모든 요청은 인증 필요
+            });
 
             // exceptionHandling추가
-                .exceptionHandling(ex -> ex
+                http.exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint())
-                        .accessDeniedHandler(accessDeniedHandler()))
+                        .accessDeniedHandler(accessDeniedHandler()));
 
             // 직접 구현한 JWT 필터를 기본 필터 앞에 추가
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class);
 
         return http.build();
