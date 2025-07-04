@@ -15,6 +15,7 @@ import com.codruwh.routine.controller.dto.ProfileResponseDto;
 import com.codruwh.routine.domain.Profile;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -33,8 +34,9 @@ public class UsersController {
     summary = "사용자 정보 조회",
     description = "현재 로그인한 사용자의 프로필 정보를 조회합니다. AccessToken이 필요합니다"
   )
+  @SecurityRequirement(name = "bearerAuth")
   @GetMapping("/me")
-  public ResponseEntity<ProfileResponseDto> getMyProfile(@RequestHeader("Authorization") String authorizationHeader, @AuthenticationPrincipal UserDetails userDetails) {
+  public ResponseEntity<ProfileResponseDto> getMyProfile(@AuthenticationPrincipal UserDetails userDetails) {
     // JwtAuthenticationFilter에서 UserDetails의 username에 UID가 들어갑니다
     UUID userId = UUID.fromString(userDetails.getUsername());
     Profile profile = usersService.getProfileByUserId(userId);
