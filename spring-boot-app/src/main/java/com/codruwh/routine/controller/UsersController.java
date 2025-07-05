@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codruwh.routine.application.UsersService;
+import com.codruwh.routine.controller.dto.FirstLoginStatusDto;
 import com.codruwh.routine.controller.dto.ProfileResponseDto;
+import com.codruwh.routine.domain.FirstLoginStatus;
 import com.codruwh.routine.domain.Profile;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,5 +44,18 @@ public class UsersController {
     Profile profile = usersService.getProfileByUserId(userId);
 
     return ResponseEntity.ok(new ProfileResponseDto(profile));
+  }
+
+  @Operation(
+    summary = "최초 로그인 여부 검사",
+    description = "최초 로그인 여부를 반환합니다. AccessToken이 필요합니다"
+  )
+  @SecurityRequirement(name = "bearerAuth")
+  @GetMapping("/first-login")
+  public ResponseEntity<FirstLoginStatusDto> getIsFirstLogin(@AuthenticationPrincipal UserDetails userDetails) {
+    UUID userId = UUID.fromString(userDetails.getUsername());
+    FirstLoginStatus firstLoginStatus = usersService.getIsFirstLoginStatus(userId);
+
+    return ResponseEntity.ok(new FirstLoginStatusDto(firstLoginStatus.getId(), firstLoginStatus.isFirstLogin()));
   }
 }
