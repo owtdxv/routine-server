@@ -49,7 +49,7 @@ public class Profile {
   @CreationTimestamp
   private OffsetDateTime createdAt; // 생성 시각
 
-  @Column(name = "avatar")
+  @Column(name = "avatar", columnDefinition = "TEXT")
   private String avatar; // 프로필 이미지 url
 
   @Column(name = "title")
