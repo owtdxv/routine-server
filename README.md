@@ -7,3 +7,9 @@
 ```
 
 /api 안붙여도 됩니다
+
+## 실행
+
+```
+./gradlew bootRun -Dspring.profiles.active=dev
+```

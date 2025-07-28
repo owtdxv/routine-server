@@ -46,6 +46,10 @@ public class SecurityConfig {
             // 요청에 대한 인가 규칙 설정
             http.authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/", "/api", "/error", "/favicon.ico", "/actuator/**").permitAll(); // 특정 경로는 인증 없이 허용
+
+                // JWT토큰이 필요 없는 API의 경우, 이곳에 추가해야 정상적으로 요청이 들어갑니다
+                auth.requestMatchers("/auth/signup").permitAll();
+
                 if (swaggerEnabled) {
                     // Swagger UI 및 API docs에 인증 없이 접근 허용
                     auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll();
