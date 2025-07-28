@@ -41,7 +41,7 @@ public class SupabaseAuthService {
      * @return UID
      */
     public String createUser(String email, String password) {
-      String requestBody = String.format("{\"email\": \"%s\", \"password\": \"%s\", \"email_confirm\": false}", email, password);
+      String requestBody = String.format("{\"email\": \"%s\", \"password\": \"%s\", \"email_confirm\": true}", email, password);
 
       try {
         JsonNode responseNode = webClient.post()

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.codruwh.routine.common.ApiException;
+import com.codruwh.routine.controller.dto.UserProfileResponseDto;
 import com.codruwh.routine.domain.Title;
 import com.codruwh.routine.domain.UserProfile;
 import com.codruwh.routine.domain.UserSetting;
@@ -66,5 +67,17 @@ public class UserService {
 
         // 5. 생성된 UID 반환
         return uid;
+    }
+
+    /**
+     * 사용자 고유 식별자를 통해 사용자 프로필 정보를 반환합니다.
+     * @param uid 사용자 고유 식별자
+     * @return profile 테이블의 UID를 제외한 나머지 정보
+     */
+    public UserProfileResponseDto getUserProfileById(UUID uid) {
+        UserProfile profile = userProfileRepository.findById(uid.toString())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "사용자 프로필 정보를 찾을 수 없습니다."));
+
+        return UserProfileResponseDto.from(profile);
     }
 }
