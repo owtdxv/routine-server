@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,6 +40,7 @@ public class UserProfile {
 
   @Builder.Default
   @Column(nullable = false)
+  @JsonIgnore
   private boolean isFirstLogin = false;
 
   @Column(length = 100)
