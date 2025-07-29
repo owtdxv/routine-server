@@ -1,5 +1,8 @@
 package com.codruwh.routine.controller;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,8 +26,13 @@ public class BasicController {
    */
   @GetMapping("/")
   public ResponseEntity<Map<String, String>> healthCheck() {
+    LocalDateTime now = LocalDateTime.now();
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     Map<String, String> res = new HashMap<>();
     res.put("status", "UP");
+    res.put("serverTime", now.format(formatter));
+    res.put("timeZone", ZoneId.systemDefault().toString());
 
     return ResponseEntity.ok(res);
   }

@@ -1,7 +1,9 @@
 package com.codruwh.routine.controller;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codruwh.routine.application.UserService;
@@ -22,6 +25,7 @@ import com.codruwh.routine.controller.dto.UserProfileResponseDto;
 import com.codruwh.routine.controller.dto.UserSettingResponseDto;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
@@ -133,6 +137,31 @@ public class UserController {
 
       userService.editUserSetting(uid, entity);
 
+      return ResponseEntity.noContent().build();
+  }
+
+  @Operation(
+            summary = "사용자 루틴 달성 통계 반환",
+            description = "지정된 기간 동안의 사용자의 루틴별 일일 달성 기록을 반환합니다."
+    )
+  @SecurityRequirement(name = "bearerAuth")
+  @GetMapping("/statistics/{uid}")
+  public ResponseEntity<Void> getUserRoutineStatistics(
+        @Parameter(description = "사용자 고유 식별자") @PathVariable("uid") UUID uid,
+        @Parameter(description = "조회 시작일 (YYYY-MM-DD)") @RequestParam("startDay") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDay,
+        @Parameter(description = "조회 종료일 (YYYY-MM-DD)") @RequestParam("endDay") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDay,
+        @AuthenticationPrincipal UserDetails userDetails
+  ) {
+      // 본인의 데이터만 조회할 수 있도록 검증합니다.
+      UUID currentUserId = UUID.fromString(userDetails.getUsername());
+      if (!currentUserId.equals(uid)) {
+          throw new ApiException(HttpStatus.FORBIDDEN, "본인의 통계만 조회할 수 있습니다.");
+      }
+
+      // 서비스 로직을 호출하여 통계 데이터를 가져옵니다.
+      // StatisticsResponseDto responseDto = statisticsService.getUserRoutineStatistics(uid, startDay, endDay);
+
+      // return ResponseEntity.ok(responseDto);
       return ResponseEntity.noContent().build();
   }
 }
