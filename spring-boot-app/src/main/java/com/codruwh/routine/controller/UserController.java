@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.codruwh.routine.application.UserService;
 import com.codruwh.routine.common.ApiException;
 import com.codruwh.routine.controller.dto.EditProfileRequestDto;
+import com.codruwh.routine.controller.dto.EditSettingRequestDto;
 import com.codruwh.routine.controller.dto.UserProfileResponseDto;
 import com.codruwh.routine.controller.dto.UserSettingResponseDto;
 
@@ -76,12 +77,12 @@ public class UserController {
   }
 
   @Operation(
-        summary = "사용자 설정값 조회",
-        description = "현재 로그인한 사용자의 설정값 정보를 조회합니다. AccessToken이 필요합니다."
+        summary = "사용자 프로필 수정",
+        description = "프로필 정보(이름, 생년월일, 성별)를 수정합니다. AccessToken이 필요합니다."
     )
   @SecurityRequirement(name = "bearerAuth")
   @PatchMapping("/profile/{uid}")
-  public ResponseEntity<Void> patchMethodName(
+  public ResponseEntity<Void> editProfile(
     @RequestBody EditProfileRequestDto entity,
     @AuthenticationPrincipal UserDetails userDetails,
     @PathVariable("uid") UUID uid) {
@@ -99,6 +100,38 @@ public class UserController {
 
 
       userService.editUserProfile(uid, entity);
+
+      return ResponseEntity.noContent().build();
+  }
+
+  @Operation(
+        summary = "사용자 설정값 수정",
+        description = "사용자의 설정값을 수정합니다. AccessToken이 필요합니다."
+    )
+  @SecurityRequirement(name = "bearerAuth")
+  @PatchMapping("/setting/{uid}")
+  public ResponseEntity<Void> editUserSetting(
+    @RequestBody EditSettingRequestDto entity,
+    @AuthenticationPrincipal UserDetails userDetails,
+    @PathVariable("uid") UUID uid) {
+      UUID currentUserId = UUID.fromString(userDetails.getUsername());
+
+      if(!currentUserId.equals(uid)) {
+        throw new ApiException(HttpStatus.FORBIDDEN, "본인 외 사용자의 정보는 열람할 수 없습니다");
+      }
+
+      // entity에 대한 유효성 검사
+      if (entity.getTitleId() == null ||
+        entity.getBackgroundColor() == null ||
+        entity.getLumiImage() == null) {
+        throw new ApiException(HttpStatus.BAD_REQUEST, "수정 값은 null일 수 없습니다.");
+      }
+
+      if(entity.getBackgroundColor() > 10 || entity.getLumiImage() > 5) {
+        throw new ApiException(HttpStatus.BAD_REQUEST, "유효하지 않은 설정값입니다");
+      }
+
+      userService.editUserSetting(uid, entity);
 
       return ResponseEntity.noContent().build();
   }

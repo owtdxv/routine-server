@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.codruwh.routine.common.ApiException;
 import com.codruwh.routine.controller.dto.EditProfileRequestDto;
+import com.codruwh.routine.controller.dto.EditSettingRequestDto;
 import com.codruwh.routine.controller.dto.UserProfileResponseDto;
 import com.codruwh.routine.controller.dto.UserSettingResponseDto;
 import com.codruwh.routine.domain.Title;
@@ -107,5 +108,22 @@ public class UserService {
         userProfile.setName(requestDto.getName());
         userProfile.setBirthDate(requestDto.getBirthDate());
         userProfile.setGender(requestDto.getGender());
+    }
+
+    /**
+     * 사용자의 설정값을 수정합니다
+     * @param uid 사용자 고유 식별자
+     * @param requestDto
+     */
+    @Transactional
+    public void editUserSetting(UUID uid, EditSettingRequestDto requestDto) {
+        UserSetting userSetting = userSettingRepository.findById(uid.toString())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "사용자 설정을 찾을 수 없습니다."));
+
+        Title title = titleRepository.findById(requestDto.getTitleId())
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "존재하지 않는 칭호 ID입니다."));
+        userSetting.setTitle(title);
+        userSetting.setBackgroundColor(requestDto.getBackgroundColor());
+        userSetting.setLumiImage(requestDto.getLumiImage());
     }
 }
