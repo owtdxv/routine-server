@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.codruwh.routine.application.StatisticsService;
 import com.codruwh.routine.application.UserService;
 import com.codruwh.routine.common.ApiException;
 import com.codruwh.routine.controller.dto.EditProfileRequestDto;
 import com.codruwh.routine.controller.dto.EditSettingRequestDto;
+import com.codruwh.routine.controller.dto.StatisticsResponseDto;
 import com.codruwh.routine.controller.dto.UserProfileResponseDto;
 import com.codruwh.routine.controller.dto.UserSettingResponseDto;
 
@@ -35,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
   private final UserService userService;
+  private final StatisticsService statisticsService;
 
   @Operation(
         summary = "사용자 프로필 조회",
@@ -146,7 +149,7 @@ public class UserController {
     )
   @SecurityRequirement(name = "bearerAuth")
   @GetMapping("/statistics/{uid}")
-  public ResponseEntity<Void> getUserRoutineStatistics(
+  public ResponseEntity<StatisticsResponseDto> getUserRoutineStatistics(
         @Parameter(description = "사용자 고유 식별자") @PathVariable("uid") UUID uid,
         @Parameter(description = "조회 시작일 (YYYY-MM-DD)") @RequestParam("startDay") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDay,
         @Parameter(description = "조회 종료일 (YYYY-MM-DD)") @RequestParam("endDay") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDay,
@@ -158,10 +161,8 @@ public class UserController {
           throw new ApiException(HttpStatus.FORBIDDEN, "본인의 통계만 조회할 수 있습니다.");
       }
 
-      // 서비스 로직을 호출하여 통계 데이터를 가져옵니다.
-      // StatisticsResponseDto responseDto = statisticsService.getUserRoutineStatistics(uid, startDay, endDay);
-
-      // return ResponseEntity.ok(responseDto);
-      return ResponseEntity.noContent().build();
+      // 사용자의 통계 기록 조회
+      StatisticsResponseDto responseDto = statisticsService.getUserRoutineStatistics(uid, startDay, endDay);
+      return ResponseEntity.ok(responseDto);
   }
 }
