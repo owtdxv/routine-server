@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.codruwh.routine.application.ChallengeService;
 import com.codruwh.routine.application.RoutineService;
 import com.codruwh.routine.common.ApiException;
 import com.codruwh.routine.controller.dto.AllRoutinesResponseDto;
+import com.codruwh.routine.controller.dto.ChallengeResponseDto;
 import com.codruwh.routine.controller.dto.RecommendResponseDto;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +35,7 @@ public class RoutineController {
             Arrays.asList("수면", "운동", "영양소", "햇빛", "사회적유대감");
 
   private final RoutineService routineService;
+  private final ChallengeService challengeService;
 
   @Operation(
             summary = "추천 루틴 생성",
@@ -68,6 +71,17 @@ public class RoutineController {
     @GetMapping
     public ResponseEntity<AllRoutinesResponseDto> getAllRoutines() {
         AllRoutinesResponseDto responseDto = routineService.getAllRoutines();
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @Operation(
+            summary = "챌린지 미션 조회",
+            description = "이번 달의 챌린지 미션 내용과, 오늘 날짜 기준 챌린지를 완료한 참여자 수를 반환합니다."
+    )
+    @GetMapping("/challenge")
+    public ResponseEntity<ChallengeResponseDto> getChallengeInfo() {
+        // 서비스 로직을 호출하여 챌린지 정보를 가져옵니다.
+        ChallengeResponseDto responseDto = challengeService.getChallengeInfo();
         return ResponseEntity.ok(responseDto);
     }
 }
