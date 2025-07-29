@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.codruwh.routine.controller.dto.AllRoutinesResponseDto;
 import com.codruwh.routine.controller.dto.CategoryDto;
 import com.codruwh.routine.controller.dto.RecommendResponseDto;
 import com.codruwh.routine.controller.dto.RecommendedRoutineDto;
+import com.codruwh.routine.controller.dto.RoutineDto;
 import com.codruwh.routine.domain.Routine;
 import com.codruwh.routine.infra.repository.RoutineRepository;
 
@@ -80,5 +82,29 @@ public class RoutineService {
               .category(requestedCategoryNames)
               .recommend(dtoList)
               .build();
+  }
+
+  /**
+   * routines 테이블에 저장된 모든 루틴 정보를 조회합니다
+   * @return 모든 루틴 정보
+   */
+  @Transactional(readOnly = true) // 읽기 전용
+  public AllRoutinesResponseDto getAllRoutines() {
+    List<Routine> allRoutines = routineRepository.findAll();
+
+    List<RoutineDto> dtoList = allRoutines.stream()
+            .map(routine -> RoutineDto.builder()
+                    .rid(routine.getRid())
+                    .content(routine.getContent())
+                    .category(CategoryDto.builder()
+                            .categoryId(routine.getCategory().getCategoryId())
+                            .value(routine.getCategory().getValue())
+                            .build())
+                    .build())
+            .collect(Collectors.toList());
+
+    return AllRoutinesResponseDto.builder()
+      .routines(dtoList)
+      .build();
   }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.codruwh.routine.application.RoutineService;
 import com.codruwh.routine.common.ApiException;
+import com.codruwh.routine.controller.dto.AllRoutinesResponseDto;
 import com.codruwh.routine.controller.dto.RecommendResponseDto;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,4 +61,13 @@ public class RoutineController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @Operation(
+            summary = "모든 루틴 정보 반환",
+            description = "routines 테이블에 정의된 모든 루틴에 대한 정보를 반환합니다."
+    )
+    @GetMapping
+    public ResponseEntity<AllRoutinesResponseDto> getAllRoutines() {
+        AllRoutinesResponseDto responseDto = routineService.getAllRoutines();
+        return ResponseEntity.ok(responseDto);
+    }
 }
