@@ -7,12 +7,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codruwh.routine.application.UserService;
 import com.codruwh.routine.common.ApiException;
+import com.codruwh.routine.controller.dto.EditProfileRequestDto;
 import com.codruwh.routine.controller.dto.UserProfileResponseDto;
 import com.codruwh.routine.controller.dto.UserSettingResponseDto;
 
@@ -69,5 +73,33 @@ public class UserController {
 
     UserSettingResponseDto dto = userService.getUserSettingById(uid);
     return ResponseEntity.ok(dto);
+  }
+
+  @Operation(
+        summary = "사용자 설정값 조회",
+        description = "현재 로그인한 사용자의 설정값 정보를 조회합니다. AccessToken이 필요합니다."
+    )
+  @SecurityRequirement(name = "bearerAuth")
+  @PatchMapping("/profile/{uid}")
+  public ResponseEntity<Void> patchMethodName(
+    @RequestBody EditProfileRequestDto entity,
+    @AuthenticationPrincipal UserDetails userDetails,
+    @PathVariable("uid") UUID uid) {
+      UUID currentUserId = UUID.fromString(userDetails.getUsername());
+
+      if(!currentUserId.equals(uid)) {
+        throw new ApiException(HttpStatus.FORBIDDEN, "본인 외 사용자의 정보는 열람할 수 없습니다");
+      }
+
+      // entity에 대한 유효성 검사
+      if (entity.getName() == null || entity.getName().isEmpty() ||
+      entity.getBirthDate() == null || entity.getGender() == null || entity.getGender().isBlank()) {
+        throw new ApiException(HttpStatus.BAD_REQUEST, "수정 값은 null일 수 없습니다.");
+      }
+
+
+      userService.editUserProfile(uid, entity);
+
+      return ResponseEntity.noContent().build();
   }
 }

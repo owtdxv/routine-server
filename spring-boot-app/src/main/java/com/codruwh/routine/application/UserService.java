@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.codruwh.routine.common.ApiException;
+import com.codruwh.routine.controller.dto.EditProfileRequestDto;
 import com.codruwh.routine.controller.dto.UserProfileResponseDto;
 import com.codruwh.routine.controller.dto.UserSettingResponseDto;
 import com.codruwh.routine.domain.Title;
@@ -92,5 +93,19 @@ public class UserService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "사용자 프로필 정보를 찾을 수 없습니다."));
 
         return UserSettingResponseDto.from(userSetting);
+    }
+
+    /**
+     * 사용자 프로필(이름, 생년월일, 성별)을 수정합니다
+     * @param uid 사용자 고유 식별자
+     * @param requestDto
+     */
+    @Transactional
+    public void editUserProfile(UUID uid, EditProfileRequestDto requestDto) {
+        UserProfile userProfile = userProfileRepository.findById(uid.toString())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다"));
+        userProfile.setName(requestDto.getName());
+        userProfile.setBirthDate(requestDto.getBirthDate());
+        userProfile.setGender(requestDto.getGender());
     }
 }
