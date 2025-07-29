@@ -19,12 +19,12 @@ public class UserAttainment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uid", nullable = false)
-    private UserProfile userProfile; // FK to users_profile [cite: 104]
+    private UserProfile userProfile; // FK to users_profile
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id", nullable = false, referencedColumnName = "id")
-    private UserRoutine userRoutine; // FK to users_routine [cite: 104]
+    private UserRoutine userRoutine; // FK to users_routine
 
     @Column(name = "timestamp", nullable = false)
-    private LocalDateTime timestamp; // 달성 시간 [cite: 104]
+    private LocalDateTime timestamp; // 달성 시간
 }

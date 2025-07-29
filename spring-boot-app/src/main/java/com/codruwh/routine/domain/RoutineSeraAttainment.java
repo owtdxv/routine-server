@@ -19,12 +19,12 @@ public class RoutineSeraAttainment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uid", nullable = false)
-    private UserProfile userProfile; // FK to users_profile [cite: 106]
+    private UserProfile userProfile; // FK to users_profile
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id", nullable = false, referencedColumnName = "id")
-    private RoutineSera routineSera; // FK to routines_sera [cite: 106]
+    private RoutineSera routineSera; // FK to routines_sera
 
     @Column(name = "timestamp", nullable = false)
-    private LocalDateTime timestamp; // 달성 시간 [cite: 106]
+    private LocalDateTime timestamp; // 달성 시간
 }

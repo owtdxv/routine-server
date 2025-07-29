@@ -14,15 +14,15 @@ public class RoutineCollection {
 
     @Id
     @Column(name = "collection_id")
-    private Integer collectionId; // PK [cite: 25]
+    private Integer collectionId; // PK
 
     @Column(name = "title")
-    private String title; // 제목 [cite: 25]
+    private String title; // 제목
 
     @Column(name = "sub_title")
-    private String subTitle; // 소제목 [cite: 25]
+    private String subTitle; // 소제목
 
     @Lob // TEXT 타입 매핑
     @Column(name = "guide", columnDefinition = "TEXT")
-    private String guide; // 가이드 [cite: 25]
+    private String guide; // 가이드
 }

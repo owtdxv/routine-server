@@ -18,10 +18,10 @@ public class RoutineCollectionMapper {
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "collection_id", referencedColumnName = "collection_id")
-    private RoutineCollection routineCollection; // FK to routine_collections [cite: 27]
+    private RoutineCollection routineCollection; // FK to routine_collections
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rid", referencedColumnName = "rid")
-    private Routine routine; // FK to routines [cite: 27]
+    private Routine routine; // FK to routines
 }

@@ -14,12 +14,12 @@ public class Routine {
 
     @Id
     @Column(name = "rid")
-    private Integer rid; // PK [cite: 16]
+    private Integer rid; // PK
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    private Category category; // FK to categorys [cite: 16]
+    private Category category; // FK to categorys
 
     @Column(name = "content")
-    private String content; // 루틴 내용 [cite: 16]
+    private String content; // 루틴 내용
 }

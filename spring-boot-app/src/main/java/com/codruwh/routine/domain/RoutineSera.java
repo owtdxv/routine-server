@@ -14,16 +14,16 @@ public class RoutineSera {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id; // PK [cite: 32]
+    private Integer id; // PK
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uid", nullable = false)
-    private UserProfile userProfile; // FK to users_profile [cite: 32]
+    private UserProfile userProfile; // FK to users_profile
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    private Category category; // FK to categorys [cite: 32]
+    private Category category; // FK to categorys
 
     @Column(name = "content")
-    private String content; // 추천 루틴 내용 [cite: 32]
+    private String content; // 추천 루틴 내용
 }
