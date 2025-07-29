@@ -6,12 +6,18 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.codruwh.routine.controller.dto.AllCollectionsResponseDto;
 import com.codruwh.routine.controller.dto.AllRoutinesResponseDto;
 import com.codruwh.routine.controller.dto.CategoryDto;
+import com.codruwh.routine.controller.dto.CollectionDetailDto;
 import com.codruwh.routine.controller.dto.RecommendResponseDto;
 import com.codruwh.routine.controller.dto.RecommendedRoutineDto;
 import com.codruwh.routine.controller.dto.RoutineDto;
 import com.codruwh.routine.domain.Routine;
+import com.codruwh.routine.domain.RoutineCollection;
+import com.codruwh.routine.domain.RoutineCollectionMapper;
+import com.codruwh.routine.infra.repository.RoutineCollectionMapperRepository;
+import com.codruwh.routine.infra.repository.RoutineCollectionRepository;
 import com.codruwh.routine.infra.repository.RoutineRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,9 +26,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RoutineService {
 
-  private final RoutineRepository routineRepository;
   private static final List<String> ALL_CATEGORIES = Arrays.asList("수면", "운동", "영양소", "햇빛", "사회적 유대감");
   private static final int TOTAL_RECOMMEND_COUNT = 10;
+
+  private final RoutineRepository routineRepository;
+  private final RoutineCollectionRepository routineCollectionRepository;
+  private final RoutineCollectionMapperRepository routineCollectionMapperRepository;
 
     /**
      * 요청된 카테고리에 가중치를 부여하여 총 10개의 루틴을 추천합니다.
@@ -107,4 +116,58 @@ public class RoutineService {
       .routines(dtoList)
       .build();
   }
+
+  /**
+   * 모든 루틴 컬렉션 정보를 반환합니다.
+   * @return 루틴 컬렉션 정보
+   */
+  @Transactional(readOnly = true)
+    public AllCollectionsResponseDto getAllRoutineCollections() {
+        // 1. 모든 루틴 컬렉션(패키지)을 조회합니다. (1번의 쿼리)
+        List<RoutineCollection> allCollections = routineCollectionRepository.findAll();
+
+        // 2. 모든 매퍼와 관련 루틴 정보를 한 번에 조회합니다. (1번의 쿼리)
+        List<RoutineCollectionMapper> allMappers = routineCollectionMapperRepository.findAllWithDetails();
+
+        // 3. 조회된 매퍼들을 collectionId를 기준으로 그룹화하여 Map으로 만듭니다. (메모리에서 처리)
+        // Key: collectionId, Value: 해당 collection에 속한 RoutineDto 리스트
+        Map<Integer, List<RoutineDto>> routinesByCollectionId = allMappers.stream()
+                .collect(Collectors.groupingBy(
+                        mapper -> mapper.getRoutineCollection().getCollectionId(),
+                        Collectors.mapping(
+                                mapper -> {
+                                    var routine = mapper.getRoutine();
+                                    return RoutineDto.builder()
+                                            .rid(routine.getRid())
+                                            .content(routine.getContent())
+                                            .category(CategoryDto.builder()
+                                                    .categoryId(routine.getCategory().getCategoryId())
+                                                    .value(routine.getCategory().getValue())
+                                                    .build())
+                                            .build();
+                                },
+                                Collectors.toList()
+                        )
+                ));
+
+        // 4. 컬렉션 목록을 순회하며, 위에서 만든 Map을 이용해 각 컬렉션에 루틴 목록을 채워넣습니다.
+        List<CollectionDetailDto> resultDtoList = allCollections.stream()
+                .map(collection -> {
+                    CollectionDetailDto dto = CollectionDetailDto.builder()
+                            .collectionId(collection.getCollectionId())
+                            .title(collection.getTitle())
+                            .subTitle(collection.getSubTitle())
+                            .guide(collection.getGuide())
+                            .build();
+                    // Map에서 해당 collectionId의 루틴 리스트를 찾아 설정합니다.
+                    dto.setRoutines(routinesByCollectionId.get(collection.getCollectionId()));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        // 5. 최종 응답 객체를 빌드하여 반환합니다.
+        return AllCollectionsResponseDto.builder()
+                .collections(resultDtoList)
+                .build();
+    }
 }

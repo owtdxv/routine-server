@@ -19,7 +19,6 @@ import com.codruwh.routine.infra.repository.UserSettingRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor

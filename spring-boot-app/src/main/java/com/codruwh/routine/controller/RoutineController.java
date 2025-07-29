@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.codruwh.routine.application.ChallengeService;
 import com.codruwh.routine.application.RoutineService;
 import com.codruwh.routine.common.ApiException;
+import com.codruwh.routine.controller.dto.AllCollectionsResponseDto;
 import com.codruwh.routine.controller.dto.AllRoutinesResponseDto;
 import com.codruwh.routine.controller.dto.ChallengeResponseDto;
 import com.codruwh.routine.controller.dto.RecommendResponseDto;
+import com.codruwh.routine.domain.RoutineCollection;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -82,6 +84,16 @@ public class RoutineController {
     public ResponseEntity<ChallengeResponseDto> getChallengeInfo() {
         // 서비스 로직을 호출하여 챌린지 정보를 가져옵니다.
         ChallengeResponseDto responseDto = challengeService.getChallengeInfo();
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @Operation(
+            summary = "Sera의 추천 루틴 모음 반환",
+            description = "routine_collections 테이블의 모든 정보와 각 컬렉션에 포함된 루틴 목록을 함께 반환합니다."
+    )
+    @GetMapping("/collections")
+    public ResponseEntity<AllCollectionsResponseDto> getAllRoutineCollections() {
+        AllCollectionsResponseDto responseDto = routineService.getAllRoutineCollections();
         return ResponseEntity.ok(responseDto);
     }
 }

@@ -9,7 +9,6 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class RoutineCollection {
 
     @Id
@@ -22,7 +21,7 @@ public class RoutineCollection {
     @Column(name = "sub_title")
     private String subTitle; // 소제목
 
-    @Lob // TEXT 타입 매핑
-    @Column(name = "guide", columnDefinition = "TEXT")
-    private String guide; // 가이드
+    @Column(name = "guide")
+    private String guide;
+
 }
