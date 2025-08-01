@@ -1,11 +1,15 @@
 package com.codruwh.routine.application;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.codruwh.routine.common.ApiException;
+import com.codruwh.routine.controller.dto.AttendanceResponseDto;
 import com.codruwh.routine.controller.dto.EditProfileRequestDto;
 import com.codruwh.routine.controller.dto.EditSettingRequestDto;
 import com.codruwh.routine.controller.dto.UserProfileResponseDto;
@@ -13,11 +17,12 @@ import com.codruwh.routine.controller.dto.UserSettingResponseDto;
 import com.codruwh.routine.domain.Title;
 import com.codruwh.routine.domain.UserProfile;
 import com.codruwh.routine.domain.UserSetting;
+import com.codruwh.routine.domain.WeeklyAttendance;
 import com.codruwh.routine.infra.repository.TitleRepository;
 import com.codruwh.routine.infra.repository.UserProfileRepository;
 import com.codruwh.routine.infra.repository.UserSettingRepository;
+import com.codruwh.routine.infra.repository.WeeklyAttendanceRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,6 +32,7 @@ public class UserService {
     private final SupabaseAuthService supabaseAuthService;
     private final UserProfileRepository userProfileRepository;
     private final UserSettingRepository userSettingRepository;
+    private final WeeklyAttendanceRepository weeklyAttendanceRepository;
     private final TitleRepository titleRepository;
 
     /**
@@ -66,6 +72,12 @@ public class UserService {
                 .lumiImage(0)
                 .build();
         userSettingRepository.save(userSetting);
+
+        // 5. 출석 체크 엔티티 생성 및 저장
+        WeeklyAttendance weeklyAttendance = WeeklyAttendance.builder()
+                .userProfile(savedUserProfile) // @MapsId를 사용하므로 userProfile만 연결해주면 됩니다.
+                .build();
+        weeklyAttendanceRepository.save(weeklyAttendance);
 
         // 5. 생성된 UID 반환
         return uid;
