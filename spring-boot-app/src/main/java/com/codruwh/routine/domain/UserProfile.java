@@ -50,6 +50,12 @@ public class UserProfile {
   @Column(length = 255)
   private String email;
 
+  @Builder.Default
+  private Double height=0.0; // 기본값 0.0
+
+  @Builder.Default
+  private Double weight=0.0; // 기본값 0.0
+
   @PrePersist
   public void prePersist() {
     if(this.createdAt == null) {

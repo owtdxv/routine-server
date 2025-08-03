@@ -30,6 +30,9 @@ public class UserProfileResponseDto {
   private LocalDate birth_date;
   private String email;
 
+  private Double height;
+  private Double weight;
+
   public static UserProfileResponseDto from(UserProfile profile) {
         return UserProfileResponseDto.builder()
             .created_at(profile.getCreatedAt())
@@ -40,6 +43,8 @@ public class UserProfileResponseDto {
             .name(profile.getName())
             .birth_date(profile.getBirthDate())
             .email(profile.getEmail())
+            .height(profile.getHeight())
+            .weight(profile.getWeight())
             .build();
     }
 }

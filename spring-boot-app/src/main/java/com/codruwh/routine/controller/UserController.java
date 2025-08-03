@@ -86,7 +86,7 @@ public class UserController {
 
   @Operation(
         summary = "사용자 프로필 수정",
-        description = "프로필 정보(이름, 생년월일, 성별)를 수정합니다. AccessToken이 필요합니다."
+        description = "프로필 정보(이름, 생년월일, 성별, 키&몸무게)를 수정합니다. AccessToken이 필요합니다."
     )
   @SecurityRequirement(name = "bearerAuth")
   @PatchMapping("/profile/{uid}")
@@ -102,7 +102,7 @@ public class UserController {
 
       // entity에 대한 유효성 검사
       if (entity.getName() == null || entity.getName().isEmpty() ||
-      entity.getBirthDate() == null || entity.getGender() == null || entity.getGender().isBlank()) {
+      entity.getBirthDate() == null || entity.getGender() == null || entity.getGender().isBlank() || entity.getHeight() == null || entity.getWeight() == null || entity.getHeight() <= 0 || entity.getWeight() <= 0) {
         throw new ApiException(HttpStatus.BAD_REQUEST, "수정 값은 null일 수 없습니다.");
       }
 
