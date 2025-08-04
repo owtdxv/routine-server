@@ -70,11 +70,16 @@ public class AttendanceService {
         DayOfWeek today = LocalDate.now().getDayOfWeek();
 
         // 3. 오늘의 요일에 해당하는 필드를 true로 설정합니다.
-        updateAttendanceForToday(attendance, today);
+        boolean isAlreadyCheckedIn = isAlreadyCheckedIn(attendance, today);
+        
+        if(!isAlreadyCheckedIn) {
+            updateAttendanceForToday(attendance, today);
+        }
+
 
         // 4. 주간 개근 여부를 확인하고 보너스를 지급합니다.
         boolean isCompleted = false;
-        if (today == DayOfWeek.SUNDAY && isWeeklyAttendancePerfect(attendance)) {
+        if (today == DayOfWeek.SUNDAY && isWeeklyAttendancePerfect(attendance) && !isAlreadyCheckedIn) {
             UserProfile userProfile = userProfileRepository.findById(userId)
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "사용자 프로필을 찾을 수 없습니다."));
 
@@ -130,4 +135,19 @@ public class AttendanceService {
                Boolean.TRUE.equals(attendance.getSat()) &&
                Boolean.TRUE.equals(attendance.getSun());
     }
+
+    /**
+     * 특정 요일의 출석 여부를 반환하는 헬퍼 메소드
+     */
+    private boolean isAlreadyCheckedIn(WeeklyAttendance attendance, DayOfWeek day) {
+    return switch (day) {
+        case MONDAY -> Boolean.TRUE.equals(attendance.getMon());
+        case TUESDAY -> Boolean.TRUE.equals(attendance.getTue());
+        case WEDNESDAY -> Boolean.TRUE.equals(attendance.getWed());
+        case THURSDAY -> Boolean.TRUE.equals(attendance.getThu());
+        case FRIDAY -> Boolean.TRUE.equals(attendance.getFri());
+        case SATURDAY -> Boolean.TRUE.equals(attendance.getSat());
+        case SUNDAY -> Boolean.TRUE.equals(attendance.getSun());
+    };
+}
 }

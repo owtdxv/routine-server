@@ -117,7 +117,7 @@ public class UserController {
         description = "사용자의 설정값을 수정합니다. AccessToken이 필요합니다."
     )
   @SecurityRequirement(name = "bearerAuth")
-  @PatchMapping("/setting/{uid}")
+  @PatchMapping("/settings/{uid}")
   public ResponseEntity<Void> editUserSetting(
     @RequestBody EditSettingRequestDto entity,
     @AuthenticationPrincipal UserDetails userDetails,
