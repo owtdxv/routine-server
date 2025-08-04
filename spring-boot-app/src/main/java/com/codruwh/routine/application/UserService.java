@@ -119,6 +119,8 @@ public class UserService {
         userProfile.setName(requestDto.getName());
         userProfile.setBirthDate(requestDto.getBirthDate());
         userProfile.setGender(requestDto.getGender());
+        userProfile.setHeight(requestDto.getHeight());
+        userProfile.setWeight(requestDto.getWeight());
     }
 
     /**

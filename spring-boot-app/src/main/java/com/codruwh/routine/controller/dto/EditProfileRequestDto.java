@@ -21,5 +21,8 @@ public class EditProfileRequestDto {
     private LocalDate birthDate;
 
     private String gender;
+
+    private Double height;
+    private Double weight;
 }
 
