@@ -30,9 +30,9 @@ public class UserSleep {
     private UserProfile userProfile;
 
     @Column(nullable = false)
-    private LocalDateTime timestamp;
+    private LocalDate timestamp;
 
-    private LocalDateTime starTime;
+    private LocalDateTime startTime;
 
     private LocalDateTime endTime;
 
