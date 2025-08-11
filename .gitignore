@@ -73,3 +73,6 @@ $RECYCLE.BIN/
 ### Environment ###
 .env
 docker-compose.prod.yml
+
+### gcp-credentials ###
+.gcp
