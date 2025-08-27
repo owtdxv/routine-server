@@ -26,9 +26,9 @@ public class ChatbotController {
         summary = "Sera의 Tip!",
         description = "메인화면에 표시되는 Sera의 건강 팁을 반환합니다"
     )
-    //@SecurityRequirement(name = "bearerAuth")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/tip")
-    public ResponseEntity<String> getSerasTip() {
+    public ResponseEntity<String> getSerasTip(@AuthenticationPrincipal UserDetails userDetails) {
         String response = chatbotService.getSerasTip();
         return ResponseEntity.ok(response);
     }
