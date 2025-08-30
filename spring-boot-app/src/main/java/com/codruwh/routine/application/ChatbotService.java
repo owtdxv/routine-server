@@ -1,8 +1,12 @@
 package com.codruwh.routine.application;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.codruwh.routine.controller.dto.ChatMessageDto;
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.GenerateContentRequest;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
@@ -46,5 +50,15 @@ public class ChatbotService {
             System.out.println(e.getMessage());
             return "비타민 D는 강력한 면역력 조절 기능도 가지고 있어요. 햇빛 노출이 어렵다면 식품이나 보충제를 통해 섭취하는 것도 방법이에요.";
         }
+    }
+
+    /**
+     * 사용자의 query에 대한 답변을 생성 후 문자열로 반환합니다
+     * @return 응답 문자열
+     */
+    public String getChatbotResponse(List<ChatMessageDto> conversationHistory, UUID uid) {
+        // TODO: 실제 응답으로 대체
+
+        return "임의의 응답 메세지입니다";
     }
 }
