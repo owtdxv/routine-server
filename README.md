@@ -1,15 +1,5 @@
-# Getting Started
+| main에 병합되지 않는 브랜치입니다!
 
-## swagger문서
+---
 
-```
-<주소>/swagger-ui/index.html
-```
-
-/api 안붙여도 됩니다
-
-## 실행
-
-```
-./gradlew bootRun -Dspring.profiles.active=dev
-```
+-   `2025-08-30`: 서버에 rate-limit 설정을 추가했습니다.
