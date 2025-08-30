@@ -3,7 +3,7 @@ upstream spring_boot_app {
 }
 
 # Rate Limit
-limit_req_zone $binary_remote_addr zone=mylimit:10m rate 1r/s;
+limit_req_zone $binary_remote_addr zone=mylimit:10m rate=1r/s;
 
 server {
     listen 80;
@@ -11,7 +11,7 @@ server {
 
     location / {
         limit_req zone=mylimit burst=5;
-
+        
         proxy_pass http://spring_boot_app;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
