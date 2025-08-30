@@ -30,6 +30,6 @@ public class ChatbotController {
     @GetMapping("/tip")
     public ResponseEntity<String> getSerasTip(@AuthenticationPrincipal UserDetails userDetails) {
         String response = chatbotService.getSerasTip();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok("{\"tip\":\"" + response + "\"}");
     }
 }
