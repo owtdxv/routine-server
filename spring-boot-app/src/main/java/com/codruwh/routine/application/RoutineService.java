@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RoutineService {
 
-  private static final List<String> ALL_CATEGORIES = Arrays.asList("수면", "운동", "영양소", "햇빛", "사회적 유대감");
+  private static final List<String> ALL_CATEGORIES = Arrays.asList("수면", "운동", "영양소", "햇빛", "사회적유대감");
   private static final int TOTAL_RECOMMEND_COUNT = 10;
 
   private final RoutineRepository routineRepository;
@@ -41,57 +41,98 @@ public class RoutineService {
      * @return 추천 루틴 정보가 담긴 DTO
      */
     @Transactional(readOnly = true)
-    public RecommendResponseDto getRecommendedRoutines(List<String> requestedCategoryNames) {
-      // 1. DB 효율을 위해 모든 카테고리의 루틴을 한 번에 조회 후, 카테고리별로 그룹핑합니다.
-      List<Routine> allRoutines = routineRepository.findRoutinesByCategoryNames(ALL_CATEGORIES);
-      Map<String, List<Routine>> routinesByCategory = allRoutines.stream()
-              .collect(Collectors.groupingBy(routine -> routine.getCategory().getValue()));
+public RecommendResponseDto getRecommendedRoutines(List<String> requestedCategoryNames) {
+    // 입력 정제
+    List<String> requested = Optional.ofNullable(requestedCategoryNames)
+            .orElse(Collections.emptyList())
+            .stream().filter(ALL_CATEGORIES::contains).distinct().toList();
 
-      List<Routine> resultList = new ArrayList<>();
+    // 전 카테고리 조회/그룹
+    List<Routine> all = routineRepository.findRoutinesByCategoryNames(ALL_CATEGORIES);
+    Map<String, List<Routine>> byCat = all.stream()
+            .collect(Collectors.groupingBy(r -> r.getCategory().getValue()));
 
-      // 2. [보장 단계] 5개 모든 카테고리에서 루틴을 1개씩 무작위로 추출합니다.
-      for (String categoryName : ALL_CATEGORIES) {
-          List<Routine> routinesInCurrentCategory = routinesByCategory.getOrDefault(categoryName, new ArrayList<>());
-          if (!routinesInCurrentCategory.isEmpty()) {
-              Collections.shuffle(routinesInCurrentCategory);
-              // 0번 인덱스의 루틴을 결과에 추가하고, 중복 추출을 막기 위해 리스트에서 제거합니다.
-              resultList.add(routinesInCurrentCategory.remove(0));
-          }
-      }
+    // 카테고리별 데크 준비(셔플 후 pop)
+    Map<String, Deque<Routine>> deck = new HashMap<>();
+    for (String cat : ALL_CATEGORIES) {
+        List<Routine> list = new ArrayList<>(byCat.getOrDefault(cat, List.of()));
+        Collections.shuffle(list);
+        deck.put(cat, new ArrayDeque<>(list));
+    }
 
-      // 3. [가중치 부여 단계] 남은 자리를 '요청된 카테고리'의 루틴으로만 채웁니다.
-      List<Routine> priorityPool = new ArrayList<>();
-      for (String categoryName : requestedCategoryNames) {
-          // '보장 단계'에서 사용하고 남은 루틴들을 우선순위 풀에 추가합니다.
-          priorityPool.addAll(routinesByCategory.getOrDefault(categoryName, new ArrayList<>()));
-      }
-      Collections.shuffle(priorityPool);
+    List<Routine> result = new ArrayList<>(TOTAL_RECOMMEND_COUNT);
 
-      int remainingSlots = TOTAL_RECOMMEND_COUNT - resultList.size();
-      if (remainingSlots > 0 && !priorityPool.isEmpty()) {
-          resultList.addAll(priorityPool.stream().limit(remainingSlots).collect(Collectors.toList()));
-      }
+    // 1) 전 카테고리 최소 1개 보장
+    for (String cat : ALL_CATEGORIES) {
+        Deque<Routine> q = deck.get(cat);
+        if (q != null && !q.isEmpty()) result.add(q.pollFirst());
+    }
 
-      // 4. 최종 결과 리스트를 다시 섞어 순서를 예측할 수 없게 합니다.
-      Collections.shuffle(resultList);
+    // 2) 요청 가중치: 라운드로빈 + 무작위 시작 (+ 선택적 상한)
+    int remaining = TOTAL_RECOMMEND_COUNT - result.size();
+    Map<String,Integer> taken = new HashMap<>();
+    for (Routine r : result) taken.merge(r.getCategory().getValue(), 1, Integer::sum);
 
-      // 5. 최종 결과를 DTO로 변환하여 반환합니다.
-      List<RecommendedRoutineDto> dtoList = resultList.stream()
-              .map(routine -> RecommendedRoutineDto.builder()
-                      .rid(routine.getRid())
-                      .content(routine.getContent())
-                      .category(CategoryDto.builder()
-                              .categoryId(routine.getCategory().getCategoryId())
-                              .value(routine.getCategory().getValue())
-                              .build())
-                      .build())
-              .collect(Collectors.toList());
+    List<String> order = new ArrayList<>(requested);
+    if (!order.isEmpty()) {
+        int start = new Random().nextInt(order.size()); // 편향 제거
+        Collections.rotate(order, -start);
+    }
 
-      return RecommendResponseDto.builder()
-              .category(requestedCategoryNames)
-              .recommend(dtoList)
-              .build();
-  }
+    final int MAX_PER_CATEGORY = 3; // 선택: 한 카테고리 총 3개 초과 금지(과다 편중 방지)
+
+    int idx = 0;
+    while (remaining > 0 && !order.isEmpty()) {
+        String cat = order.get(idx % order.size());
+        Deque<Routine> q = deck.get(cat);
+        int cur = taken.getOrDefault(cat, 0);
+        if (q != null && !q.isEmpty() && cur < MAX_PER_CATEGORY) {
+            result.add(q.pollFirst());
+            taken.put(cat, cur + 1);
+            remaining--;
+            idx++;
+        } else {
+            order.remove(cat); // 고갈/상한 도달 시 제외
+        }
+    }
+
+    // 3) 아직 남으면 비요청에서 보충(상한 고려)
+    if (remaining > 0) {
+        List<String> others = ALL_CATEGORIES.stream()
+                .filter(c -> !requested.contains(c)).toList();
+        int j = 0;
+        while (remaining > 0 && !others.isEmpty()) {
+            String cat = others.get(j % others.size());
+            Deque<Routine> q = deck.get(cat);
+            int cur = taken.getOrDefault(cat, 0);
+            if (q != null && !q.isEmpty() && cur < MAX_PER_CATEGORY) {
+                result.add(q.pollFirst());
+                taken.put(cat, cur + 1);
+                remaining--;
+            }
+            j++;
+        }
+    }
+
+    Collections.shuffle(result);
+
+    // DTO 매핑
+    List<RecommendedRoutineDto> dtoList = result.stream()
+            .map(r -> RecommendedRoutineDto.builder()
+                    .rid(r.getRid())
+                    .content(r.getContent())
+                    .category(CategoryDto.builder()
+                            .categoryId(r.getCategory().getCategoryId())
+                            .value(r.getCategory().getValue())
+                            .build())
+                    .build())
+            .toList();
+
+    return RecommendResponseDto.builder()
+            .category(requested)
+            .recommend(dtoList)
+            .build();
+}
 
   /**
    * routines 테이블에 저장된 모든 루틴 정보를 조회합니다
