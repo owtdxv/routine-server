@@ -11,8 +11,8 @@ import lombok.Getter;
  */
 @Getter
 public class ErrorResponseDTO {
-  private int status;
-  private String message;
+  private final int status;
+  private final String message;
   public String timestamp;
 
   public ErrorResponseDTO(int httpStatus, String message) {
