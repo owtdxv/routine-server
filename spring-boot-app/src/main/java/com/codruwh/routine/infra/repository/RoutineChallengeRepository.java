@@ -15,4 +15,5 @@ public interface RoutineChallengeRepository extends JpaRepository<RoutineChallen
      * @return Optional<RoutineChallenge>
      */
     Optional<RoutineChallenge> findFirstBy();
+    Optional<RoutineChallenge> findCurrentChallenge();
 }

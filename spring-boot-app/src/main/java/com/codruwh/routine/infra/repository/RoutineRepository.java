@@ -16,4 +16,6 @@ public interface RoutineRepository extends JpaRepository<Routine, Integer> {
      */
     @Query("SELECT r FROM Routine r WHERE r.category.value IN :categoryNames")
     List<Routine> findRoutinesByCategoryNames(@Param("categoryNames") List<String> categoryNames);
+    List<Routine> findByIdIn(List<Integer> ids);
+    List<com.codruwh.routine.domain.UserRoutine> findByUid(String uid);
 }

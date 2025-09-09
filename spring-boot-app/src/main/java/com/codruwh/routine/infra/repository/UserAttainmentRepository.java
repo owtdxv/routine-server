@@ -9,4 +9,8 @@ import com.codruwh.routine.domain.UserAttainment;
 
 public interface UserAttainmentRepository extends JpaRepository<UserAttainment, Long> {
     List<UserAttainment> findByUserProfileUidAndTimestampBetween(String uid, LocalDateTime start, LocalDateTime end);
+    List<UserAttainment> findByUidAndTimestampBetween(String uid, LocalDateTime start, LocalDateTime end);
+    boolean existsByRidAndTimestampBetween(Integer rid, LocalDateTime start, LocalDateTime end);
+    boolean existsByRidAndUidAndTimestampBetween(Integer rid, String uid, LocalDateTime start, LocalDateTime end);
+    void deleteByRidAndUidAndTimestampBetween(Integer rid, String uid, LocalDateTime start, LocalDateTime end);
 }

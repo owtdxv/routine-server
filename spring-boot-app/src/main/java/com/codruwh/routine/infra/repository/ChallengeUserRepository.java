@@ -4,6 +4,9 @@ import com.codruwh.routine.domain.ChallengeUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Repository
 public interface ChallengeUserRepository extends JpaRepository<ChallengeUser, String> {
     /**
@@ -12,4 +15,8 @@ public interface ChallengeUserRepository extends JpaRepository<ChallengeUser, St
      * @return 완료한 사용자 수
      */
     long countByCheckIsTrue();
+    Optional<ChallengeUser> findByUidAndDateBetween(String uid, LocalDateTime start, LocalDateTime end);
+    int countByDateBetween(LocalDateTime start, LocalDateTime end);
+
+    void deleteByUidAndDateBetween(String uid, LocalDateTime start, LocalDateTime end);
 }

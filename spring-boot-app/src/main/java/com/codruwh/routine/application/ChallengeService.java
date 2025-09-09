@@ -13,6 +13,9 @@ import com.codruwh.routine.infra.repository.RoutineChallengeRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.com.codruwh.routine.controller.dto.ChallengeStatusResponseDto;
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class ChallengeService {
@@ -46,5 +49,92 @@ public class ChallengeService {
               .content(currentChallenge.getContent())
               .participant(participantCount)
               .build();
+  }
+
+  public ChallengeStatusResponseDto getChallengeStatus(String uid) {
+    // 이번 달의 챌린지 정보 가져오기
+    RoutineChallenge currentChallenge = routineChallengeRepository.findCurrentChallenge()
+            .orElse(null);
+
+    if (currentChallenge == null) {
+      throw new IllegalStateException("진행 중인 챌린지가 없습니다.");
+    }
+
+    // 카테고리 정보
+    Category category = categoryRepository.findById(currentChallenge.getCategoryId())
+            .orElse(null);
+
+    CategoryDto categoryDto = null;
+    if (category != null) {
+      categoryDto = CategoryDto.builder()
+              .categoryId(category.getId())
+              .value(category.getValue())
+              .build();
+    }
+
+    ChallengeInfoDto challengeDto = ChallengeInfoDto.builder()
+            .category(categoryDto)
+            .content(currentChallenge.getContent())
+            .build();
+
+    // 총 참여자 수 (오늘 기준)
+    LocalDate today = LocalDate.now();
+    int participants = challengeUserRepository.countByDateBetween(
+            today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+
+    // 이 사용자가 대상자인지 확인
+    ChallengeUser challengeUser = challengeUserRepository.findByUidAndDateBetween(
+                    uid, today.atStartOfDay(), today.plusDays(1).atStartOfDay())
+            .orElse(null);
+
+    boolean isTarget = challengeUser != null;
+    boolean check = false;
+
+    if (isTarget) {
+      check = challengeUser.getCheck() != null; // check 값이 null이 아니면 선택을 한 것
+    }
+
+    return ChallengeStatusResponseDto.builder()
+            .challenge(challengeDto)
+            .participants(participants)
+            .isTarget(isTarget)
+            .check(check)
+            .build();
+  }
+
+  @Transactional
+  public void acceptChallenge(String uid) {
+    LocalDate today = LocalDate.now();
+   ChallengeUser challengeUser = challengeUserRepository.findByUidAndDateBetween(
+                    uid, today.atStartOfDay(), today.plusDays(1).atStartOfDay())
+            .orElseThrow(() -> new IllegalArgumentException("챌린지 대상자가 아닙니다."));
+
+    challengeUser.setCheck(false); // 도전 수락, 아직 달성하지 않음
+    challengeUserRepository.save(challengeUser);
+  }
+
+  @Transactional
+  public void holdChallenge(String uid) {
+    LocalDate today = LocalDate.now();
+    challengeUserRepository.deleteByUidAndDateBetween(
+            uid, today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+  }
+  @Transactional
+  public void checkChallengeAttainment(String uid) {
+    LocalDate today = LocalDate.now();
+    ChallengeUser challengeUser = challengeUserRepository.findByUidAndDateBetween(
+                    uid, today.atStartOfDay(), today.plusDays(1).atStartOfDay())
+            .orElseThrow(() -> new IllegalArgumentException("챌린지에 참여하지 않았습니다."));
+
+    if (challengeUser.getCheck() == null) {
+      throw new IllegalArgumentException("챌린지를 수락하지 않았습니다.");
+    }
+
+    if (challengeUser.getCheck()) {
+      throw new IllegalArgumentException("이미 달성한 챌린지입니다.");
+    }
+
+    challengeUser.setCheck(true); // 달성 완료
+    challengeUserRepository.save(challengeUser);
   }
 }
