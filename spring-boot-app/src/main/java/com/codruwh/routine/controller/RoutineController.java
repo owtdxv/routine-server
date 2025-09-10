@@ -14,8 +14,15 @@ import com.codruwh.routine.application.RoutineService;
 import com.codruwh.routine.common.ApiException;
 import com.codruwh.routine.controller.dto.AllCollectionsResponseDto;
 import com.codruwh.routine.controller.dto.AllRoutinesResponseDto;
+import com.codruwh.routine.controller.dto.AttainmentRequestDto;
 import com.codruwh.routine.controller.dto.ChallengeResponseDto;
+import com.codruwh.routine.controller.dto.PersonalRoutineResponseDto;
+import com.codruwh.routine.controller.dto.RecommendResponseDto;
+import com.codruwh.routine.controller.dto.RecommendRoutineResponseDto;
+import com.codruwh.routine.controller.dto.RoutineAddCustomRequestDto;
 import com.codruwh.routine.controller.dto.RoutineAddRequestDto;
+import com.codruwh.routine.controller.dto.RoutineUpdateRequestDto;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -210,7 +217,7 @@ public class RoutineController {
             description = "사용자에게 할당된 Sera의 추천 루틴 정보와 그 달성 체크 여부 정보를 반환합니다."
     )
     @GetMapping("/recommend/{uid}")
-    public ResponseEntity<RecommendRoutineResponseDto> getRecommendRoutines(
+    public ResponseEntity<RecommendRoutineResponseDto> getSeraRecommendRoutines(
             @Parameter(description = "사용자 UID", required = true) @PathVariable String uid,
             @RequestHeader("Authorization") String authorization) {
 
@@ -220,28 +227,10 @@ public class RoutineController {
             throw new ApiException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
         }
 
-        RecommendRoutineResponseDto responseDto = routineService.getRecommendRoutines(uid);
+        RecommendRoutineResponseDto responseDto = routineService.getSeraRecommendRoutines(uid);
         return ResponseEntity.ok(responseDto);
     }
 
-    @Operation(
-            summary = "Sera의 추천 루틴 정보 반환",
-            description = "사용자에게 할당된 Sera의 추천 루틴 정보와 그 달성 체크 여부 정보를 반환합니다."
-    )
-    @GetMapping("/recommend/{uid}")
-    public ResponseEntity<RecommendRoutineResponseDto> getRecommendRoutines(
-            @Parameter(description = "사용자 UID", required = true) @PathVariable String uid,
-            @RequestHeader("Authorization") String authorization) {
-
-        String tokenUid = extractUidFromJWT(authorization);
-
-        if (!uid.equals(tokenUid)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
-        }
-
-        RecommendRoutineResponseDto responseDto = routineService.getRecommendRoutines(uid);
-        return ResponseEntity.ok(responseDto);
-    }
 
     @Operation(
             summary = "Sera의 추천 루틴 달성 체크",

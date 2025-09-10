@@ -6,14 +6,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.codruwh.routine.common.ApiException;
 import com.codruwh.routine.controller.dto.CategoryDto;
+import com.codruwh.routine.controller.dto.ChallengeInfoDto;
 import com.codruwh.routine.controller.dto.ChallengeResponseDto;
+import com.codruwh.routine.controller.dto.ChallengeStatusResponseDto;
+import com.codruwh.routine.domain.Category;
+import com.codruwh.routine.domain.ChallengeUser;
 import com.codruwh.routine.domain.RoutineChallenge;
+import com.codruwh.routine.infra.repository.CategoryRepository;
 import com.codruwh.routine.infra.repository.ChallengeUserRepository;
 import com.codruwh.routine.infra.repository.RoutineChallengeRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import java.com.codruwh.routine.controller.dto.ChallengeStatusResponseDto;
 import java.time.LocalDate;
 
 @Service
@@ -22,6 +26,7 @@ public class ChallengeService {
 
   private final RoutineChallengeRepository routineChallengeRepository;
   private final ChallengeUserRepository challengeUserRepository;
+  private final CategoryRepository categoryRepository;
 
   /**
      * 현재 챌린지 미션의 정보와 오늘 완료한 참여자 수를 조회합니다.
@@ -61,13 +66,13 @@ public class ChallengeService {
     }
 
     // 카테고리 정보
-    Category category = categoryRepository.findById(currentChallenge.getCategoryId())
+    Category category = categoryRepository.findById(currentChallenge.getCategory().getCategoryId())
             .orElse(null);
 
     CategoryDto categoryDto = null;
     if (category != null) {
       categoryDto = CategoryDto.builder()
-              .categoryId(category.getId())
+              .categoryId(category.getCategoryId())
               .value(category.getValue())
               .build();
     }

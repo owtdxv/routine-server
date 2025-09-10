@@ -1,6 +1,10 @@
-package java.com.codruwh.routine.infra.repository;
+package com.codruwh.routine.infra.repository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.codruwh.routine.domain.RoutineSera;
 import com.codruwh.routine.domain.UserProfile;
 public interface RoutineSeraRepository {
     List<com.codruwh.routine.domain.RoutineSera> findByUid(String uid);

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.codruwh.routine.domain.Routine;
 import com.codruwh.routine.domain.UserRoutine;
 import org.springframework.stereotype.Repository;
 

@@ -1,10 +1,11 @@
 package com.codruwh.routine.application;
 
-import java.com.codruwh.routine.controller.dto.PersonalRoutineItemDto;
-import java.com.codruwh.routine.controller.dto.PersonalRoutineResponseDto;
-import java.com.codruwh.routine.controller.dto.RecommendRoutineItemDto;
-import java.com.codruwh.routine.controller.dto.RecommendRoutineResponseDto;
+import com.codruwh.routine.controller.dto.PersonalRoutineItemDto;
+import com.codruwh.routine.controller.dto.PersonalRoutineResponseDto;
+import com.codruwh.routine.controller.dto.RecommendRoutineItemDto;
+import com.codruwh.routine.controller.dto.RecommendRoutineResponseDto;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,14 +15,28 @@ import com.codruwh.routine.controller.dto.AllCollectionsResponseDto;
 import com.codruwh.routine.controller.dto.AllRoutinesResponseDto;
 import com.codruwh.routine.controller.dto.CategoryDto;
 import com.codruwh.routine.controller.dto.CollectionDetailDto;
+import com.codruwh.routine.controller.dto.RecommendResponseDto;
 import com.codruwh.routine.controller.dto.RecommendedRoutineDto;
+import com.codruwh.routine.controller.dto.RoutineAddCustomRequestDto;
 import com.codruwh.routine.controller.dto.RoutineDto;
+import com.codruwh.routine.controller.dto.RoutineUpdateRequestDto;
+import com.codruwh.routine.domain.Category;
 import com.codruwh.routine.domain.Routine;
 import com.codruwh.routine.domain.RoutineCollection;
 import com.codruwh.routine.domain.RoutineCollectionMapper;
+import com.codruwh.routine.domain.RoutineSera;
+import com.codruwh.routine.domain.RoutineSeraAttainment;
+import com.codruwh.routine.domain.UserAttainment;
+import com.codruwh.routine.domain.UserProfile;
+import com.codruwh.routine.infra.repository.CategoryRepository;
 import com.codruwh.routine.infra.repository.RoutineCollectionMapperRepository;
 import com.codruwh.routine.infra.repository.RoutineCollectionRepository;
 import com.codruwh.routine.infra.repository.RoutineRepository;
+import com.codruwh.routine.infra.repository.RoutineSeraAttainmentRepository;
+import com.codruwh.routine.infra.repository.RoutineSeraRepository;
+import com.codruwh.routine.infra.repository.UserAttainmentRepository;
+import com.codruwh.routine.infra.repository.UserProfileRepository;
+import com.codruwh.routine.infra.repository.UserRoutineRepository;
 import com.codruwh.routine.controller.dto.RoutineAddRequestDto;
 import com.codruwh.routine.domain.UserRoutine;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +52,12 @@ public class RoutineService {
   private final RoutineRepository routineRepository;
   private final RoutineCollectionRepository routineCollectionRepository;
   private final RoutineCollectionMapperRepository routineCollectionMapperRepository;
+  private final UserRoutineRepository userRoutineRepository;
+  private final RoutineSeraRepository routineSeraRepository;
+  private final UserAttainmentRepository userAttainmentRepository;
+  private final RoutineSeraAttainmentRepository routineSeraAttainmentRepository;
+  private final CategoryRepository categoryRepository;
+  private final UserProfileRepository userProfileRepository;
 
     /**
      * 요청된 카테고리에 가중치를 부여하여 총 10개의 루틴을 추천합니다.
@@ -231,7 +252,7 @@ public RecommendResponseDto getRecommendedRoutines(List<String> requestedCategor
         for (Routine routine : routines) {
             UserRoutine userRoutine = UserRoutine.builder()
                     .uid(uid)
-                    .categoryId(routine.getCategoryId())
+                    .categoryId(routine.getCategory().getCategoryId())
                     .content(routine.getContent())
                     .notification(null) // 일단 null로 저장
                     .build();
@@ -316,7 +337,7 @@ public RecommendResponseDto getRecommendedRoutines(List<String> requestedCategor
                 .orElseThrow(() -> new IllegalArgumentException("루틴을 찾을 수 없습니다."));
 
         // 본인의 루틴만 수정 가능
-        if (!userRoutine.getUid().equals(tokenUid)) {
+        if (!userRoutine.getUserProfile().getUid().equals(tokenUid)) {
             throw new IllegalArgumentException("본인의 루틴만 수정할 수 있습니다.");
         }
 
@@ -332,7 +353,7 @@ public RecommendResponseDto getRecommendedRoutines(List<String> requestedCategor
                 .orElseThrow(() -> new IllegalArgumentException("루틴을 찾을 수 없습니다."));
 
         // 본인의 루틴만 삭제 가능
-        if (!userRoutine.getUid().equals(tokenUid)) {
+        if (!userRoutine.getUserProfile().getUid().equals(tokenUid)) {
             throw new IllegalArgumentException("본인의 루틴만 삭제할 수 있습니다.");
         }
 
@@ -345,7 +366,7 @@ public RecommendResponseDto getRecommendedRoutines(List<String> requestedCategor
         UserRoutine userRoutine = userRoutineRepository.findById(routineId)
                 .orElseThrow(() -> new IllegalArgumentException("루틴을 찾을 수 없습니다."));
 
-        if (!userRoutine.getUid().equals(uid)) {
+        if (!userRoutine.getUserProfile().getUid().equals(uid)) {
             throw new IllegalArgumentException("본인의 루틴만 체크할 수 있습니다.");
         }
 
@@ -376,7 +397,7 @@ public RecommendResponseDto getRecommendedRoutines(List<String> requestedCategor
                 routineId, uid, today.atStartOfDay(), today.plusDays(1).atStartOfDay());
     }
 
-    public RecommendRoutineResponseDto getRecommendRoutines(String uid) {
+    public RecommendRoutineResponseDto getSeraRecommendRoutines(String uid) {
         // Sera 추천 루틴들 조회 (RoutineSera 테이블에서)
         List<RoutineSera> seraRoutines = routineSeraRepository.findByUid(uid);
 
