@@ -1,0 +1,4 @@
+# release 브랜치에서만 유지.
+# nginx는 배포환경이 아니면 건드리지 않기 때문
+README.md merge=ours
+nginx/** merge=ours
