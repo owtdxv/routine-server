@@ -1,8 +1,7 @@
 package com.codruwh.routine.controller.dto;
 
-import com.google.auto.value.AutoValue.Builder;
-
 import lombok.Getter;
+import lombok.Builder;
 
 @Getter
 @Builder
